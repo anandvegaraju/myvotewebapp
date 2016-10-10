@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--CSS for table-->
+
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/3.4.1/firebase.js"></script>
+    <meta charset="UTF-8">
+    <title>Welcome Admin</title>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyDXxT3HgJ4QroFh0HH9shL5mXKla7YNwFM",
+            authDomain: "myvoteapp-a698c.firebaseapp.com",
+            databaseURL: "https://myvoteapp-a698c.firebaseio.com",
+            storageBucket: "myvoteapp-a698c.appspot.com",
+            messagingSenderId: "282720993183"
+        };
+        firebase.initializeApp(config);
+        // Get a reference to the database service
+        var database = firebase.database();
+        var can1 = firebase.database().ref('option1');
+        var can2 = firebase.database().ref('option2');
+        var can3 = firebase.database().ref('option3');
+        var can4 = firebase.database().ref('option4');
+        var can5 = firebase.database().ref('option5');
+        var v1,v2,v3,v4,v5;
+        can1.on('value',function (snapshot) {
+            v1 = snapshot.val();
+            document.getElementById("votes1").innerHTML = v1;
+
+        });
+        can2.on('value',function (snapshot) {
+            v2 = snapshot.val();
+            document.getElementById("votes2").innerHTML = v2;
+        });
+        can3.on('value',function (snapshot) {
+            v3 = snapshot.val();
+            document.getElementById("votes3").innerHTML = v3;
+        });
+        can4.on('value',function (snapshot) {
+            v4 = snapshot.val();
+            document.getElementById("votes4").innerHTML = v4;
+        });
+        can5.on('value',function (snapshot) {
+            v5 = snapshot.val();
+            document.getElementById("votes5").innerHTML = v5;
+        });
+        // On loading
+
+
+
+
+
+
+
+
+        function refreshdata() {
+            document.getElementById("votes1").innerHTML = v1;
+            document.getElementById("votes2").innerHTML = v2;
+            document.getElementById("votes3").innerHTML = v3;
+            document.getElementById("votes4").innerHTML = v4;
+            document.getElementById("votes5").innerHTML = v5;
+
+            var per1,per2,per3,per4,per5;
+            var sum = v1 + v2 + v3 + v4 + v5;
+            per1 = v1/sum * 100;
+            per2 = v2/sum * 100;
+            per3 = v3/sum * 100;
+            per4 = v4/sum * 100;
+            per5 = v5/sum * 100;
+
+            document.getElementById("percentage1").innerHTML = per1 + " %";
+            document.getElementById("percentage2").innerHTML = per2 + " %";
+            document.getElementById("percentage3").innerHTML = per3 + " %";
+            document.getElementById("percentage4").innerHTML = per4 + " %";
+            document.getElementById("percentage5").innerHTML = per5 + " %";
+            setTimeout(refreshdata, 10000);
+        }
+
+
+    </script>
+
+
+</head>
+<body>
+
+
+
+<center><h1><img src="screen.png" ></h1></center> <br/>
+<center><h1>Summary</h1></center>
+
+
+<center><b><marquee width="50%">Table will be refreshed every 10 seconds automatically</marquee></b></center>
+<!-- Summarized data -->
+
+<table id="tablee">
+    <tr>
+        <th>Candidate</th>
+        <th>Votes</th>
+        <th>Percentage</th>
+    </tr>
+    <tr>
+        <td>Candidate1</td>
+        <td id="votes1"></td>
+        <td id="percentage1"></td>
+    </tr>
+    <tr>
+        <td>Candidate2</td>
+        <td id="votes2"></td>
+        <td id="percentage2"></td>
+    </tr>
+    <tr>
+        <td>Candidate3</td>
+        <td id="votes3"></td>
+        <td id="percentage3"></td>
+    </tr>
+    <tr>
+        <td>Candidate4</td>
+        <td id="votes4"></td>
+        <td id="percentage4"></td>
+    </tr>
+    <tr>
+        <td>Candidate5</td>
+        <td id="votes5"></td>
+        <td id="percentage5"></td>
+    </tr>
+
+</table>
+
+<center>
+<input type="button" value="Refresh" onclick="refreshdata()"></center>
+
+
+
+</body>
+
+
+</html>

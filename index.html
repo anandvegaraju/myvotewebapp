@@ -1,0 +1,149 @@
+<html>
+<head><title>MyVote Admin Panel</title>
+
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+
+    </style>
+<script src="https://www.gstatic.com/firebasejs/3.4.1/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDXxT3HgJ4QroFh0HH9shL5mXKla7YNwFM",
+    authDomain: "myvoteapp-a698c.firebaseapp.com",
+    databaseURL: "https://myvoteapp-a698c.firebaseio.com",
+    storageBucket: "myvoteapp-a698c.appspot.com",
+    messagingSenderId: "282720993183"
+  };
+  firebase.initializeApp(config);
+    // Get a reference to the database service
+  var database = firebase.database();
+  var apass;
+  var a1; // for comparing the admin passcode with the input passcode
+  var phnumref,phnum,pnumexists;
+  var phonenumber; // for phonenumber
+  var name,dob,address,gender;
+  var nameref,dobref,genderref,addressref; //references to the values in the DB
+  var appd;
+  function Checkadminpass() {
+      a1 = firebase.database().ref('adminpass');
+      a1.on('value',function(snapshot){
+          apass = snapshot.val();
+
+          if(document.AdminForm.AdminPass.value == apass){window.location.href = "adminpanel.html";}else {alert("failure");}
+      });
+      off(a1);
+  }
+
+  function CheckPendingApproval() {
+      pnumexists = firebase.database().ref('phonenumbers'); //list of registered numbers
+      phnumref = firebase.database().ref(document.ApprovalPendingList.PhoneNumber.value).child('approved'); //approval value
+      phonenumber = document.ApprovalPendingList.PhoneNumber.value;  // entered number
+      pnumexists.on('value',function (snapshot) {
+          phnum = snapshot.val();  // list of registered numbers
+          if (phnum.indexOf(document.ApprovalPendingList.PhoneNumber.value)!= -1){
+              phnumref.on('value',function (snapshot) {
+
+                  if (snapshot.val()=="true"){alert("User already approved");}
+                  else if (snapshot.val()=="false") {ApprovalCommence();} // display the user details and give an option for approval
+
+              });
+          }else {alert("User not registered");}
+      });
+  }
+
+  function ApprovalCommence() {
+      nameref = firebase.database().ref(phonenumber).child('name');
+      dobref = firebase.database().ref(phonenumber).child('dob');
+      genderref = firebase.database().ref(phonenumber).child('gender');
+      addressref = firebase.database().ref(phonenumber).child('address');
+      nameref.on('value',function (snapshot) {
+          name = snapshot.val();
+          document.getElementById('username').innerHTML = name;
+          document.getElementById('userphone').innerHTML = phonenumber;
+      });
+      dobref.on('value',function (snapshot) {
+          dob = snapshot.val();
+          document.getElementById('userdob').innerHTML = dob;
+      });
+      genderref.on('value',function (snapshot) {
+          gender = snapshot.val();
+          document.getElementById('usergender').innerHTML = gender;
+      });
+      addressref.on('value',function (snapshot) {
+          address = snapshot.val();
+          document.getElementById('useraddress').innerHTML = address;
+      });
+
+
+
+
+
+
+
+  }
+
+</script>
+</head>
+<body>
+<center><h1><img src = "screen.png"></h1></center>
+<br/>
+<center><div>
+<form name="AdminForm">
+    <input type="password" id="pass" name="AdminPass" placeholder="Enter Admin passcode">
+    <input type="button" id="pass1" value="Submit" onclick="Checkadminpass()">
+</form>
+</div></center>
+<br/>
+<hr width="70%">
+<br/>
+<center>
+    <form name="ApprovalPendingList">
+        Enter phone number to approve : <input type="text" name="PhoneNumber" placeholder="Include +91">
+        <input type="button" value="Submit" onclick="CheckPendingApproval()">
+    </form>
+</center>
+<center>
+<table>
+    <tr>
+        <th>Name</th>
+        <td id = "username"></td>
+    </tr>
+    <tr>
+        <th>Gender</th>
+        <td id="usergender"></td>
+    </tr>
+    <tr>
+        <th>Date of Number</th>
+        <td id = "userdob"></td>
+    </tr>
+    <tr>
+        <th>Address</th>
+        <td id = "useraddress"></td>
+    </tr>
+    <tr>
+        <th>Phone Number</th>
+        <td id = "userphone"></td>
+    </tr>
+</table>
+</center>
+
+
+
+
+</body>
+</html>
