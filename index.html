@@ -36,9 +36,9 @@
   var a1; // for comparing the admin passcode with the input passcode
   var phnumref,phnum,pnumexists;
   var phonenumber; // for phonenumber
-  var name,dob,address,gender;
-  var nameref,dobref,genderref,addressref; //references to the values in the DB
-  var appd;
+  var name,dob,address,gender,voted;
+  var nameref,dobref,genderref,addressref,votedref; //references to the values in the DB
+  var appass;
   function Checkadminpass() {
       a1 = firebase.database().ref('adminpass');
       a1.on('value',function(snapshot){
@@ -50,19 +50,27 @@
   }
 
   function CheckPendingApproval() {
-      pnumexists = firebase.database().ref('phonenumbers'); //list of registered numbers
-      phnumref = firebase.database().ref(document.ApprovalPendingList.PhoneNumber.value).child('approved'); //approval value
-      phonenumber = document.ApprovalPendingList.PhoneNumber.value;  // entered number
-      pnumexists.on('value',function (snapshot) {
-          phnum = snapshot.val();  // list of registered numbers
-          if (phnum.indexOf(document.ApprovalPendingList.PhoneNumber.value)!= -1){
-              phnumref.on('value',function (snapshot) {
+      appass = firebase.database().ref('adminpass');
 
-                  if (snapshot.val()=="true"){alert("User already approved");}
-                  else if (snapshot.val()=="false") {ApprovalCommence();} // display the user details and give an option for approval
+      appass.once('value',function (snapshot) {
+          if(document.ApprovalPendingList.Admincode.value == snapshot.val()){
+              pnumexists = firebase.database().ref('phonenumbers'); //list of registered numbers
+              phnumref = firebase.database().ref(document.ApprovalPendingList.PhoneNumber.value).child('approved'); //approval value
+              phonenumber = document.ApprovalPendingList.PhoneNumber.value;  // entered number
+              pnumexists.once('value',function (snapshot) {
+                  phnum = snapshot.val();  // list of registered numbers
+                  if (phnum.indexOf(document.ApprovalPendingList.PhoneNumber.value)!= -1){
+                      phnumref.once('value',function (snapshot) {
 
+                          if (snapshot.val()=="true"){alert("User already approved");}
+                          else if (snapshot.val()=="false") {ApprovalCommence();} // display the user details and give an option for approval
+
+                      });
+                  }else {alert("User not registered");}
               });
-          }else {alert("User not registered");}
+              off(phnumref);
+              off(pnumexists);
+          }else {alert("Invalid passcode");}
       });
   }
 
@@ -71,6 +79,7 @@
       dobref = firebase.database().ref(phonenumber).child('dob');
       genderref = firebase.database().ref(phonenumber).child('gender');
       addressref = firebase.database().ref(phonenumber).child('address');
+
       nameref.on('value',function (snapshot) {
           name = snapshot.val();
           document.getElementById('username').innerHTML = name;
@@ -88,15 +97,27 @@
           address = snapshot.val();
           document.getElementById('useraddress').innerHTML = address;
       });
-
-
-
-
-
-
-
   }
 
+function OnApproveButtonClick() {
+    var retVal = confirm("Do you want to continue ?");
+    if( retVal == true ){
+        firebase.database().ref(phonenumber).set({name : name, dob : dob, voted : "false", address : address, gender : gender, approved : "true"});
+
+        setTimeout(function () {
+            window.location.reload(1);
+        }, 3400);
+        document.getElementById('para').innerHTML = "Approved";
+
+        off();
+
+        return true;
+    }
+    else{
+
+        return false;
+    }
+}
 </script>
 </head>
 <body>
@@ -113,12 +134,14 @@
 <br/>
 <center>
     <form name="ApprovalPendingList">
-        Enter phone number to approve : <input type="text" name="PhoneNumber" placeholder="Include +91">
+        Enter phone number to approve : <input type="text" name="PhoneNumber" placeholder="Include +91">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Enter the Admin Passcode : <input type="password" id = "pass2" name="Admincode" placeholder="Enter Admin PassCode">
         <input type="button" value="Submit" onclick="CheckPendingApproval()">
     </form>
 </center>
 <center>
-<table>
+    <b><font color="green"><p id = "para"></p></font></b>
+    <table>
     <tr>
         <th>Name</th>
         <td id = "username"></td>
@@ -142,7 +165,11 @@
 </table>
 </center>
 
-
+<center>
+    <form>
+        <input type="button" value="Approve" onclick="OnApproveButtonClick()">
+    </form>
+</center>
 
 
 </body>
