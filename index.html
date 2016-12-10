@@ -18,9 +18,12 @@
             background-color: #dddddd;
         }
 
+
     </style>
 <script src="https://www.gstatic.com/firebasejs/3.4.1/firebase.js"></script>
 <script>
+
+
   // Initialize Firebase
   var config = {
     apiKey: "AIzaSyDXxT3HgJ4QroFh0HH9shL5mXKla7YNwFM",
@@ -53,7 +56,7 @@
       appass = firebase.database().ref('adminpass');
 
       appass.once('value',function (snapshot) {
-          if(document.ApprovalPendingList.Admincode.value == snapshot.val()){
+          if((document.ApprovalPendingList.Admincode.value == snapshot.val()) && (document.ApprovalPendingList.PhoneNumber.value.length > 10) ){
               pnumexists = firebase.database().ref('phonenumbers'); //list of registered numbers
               phnumref = firebase.database().ref(document.ApprovalPendingList.PhoneNumber.value).child('approved'); //approval value
               phonenumber = document.ApprovalPendingList.PhoneNumber.value;  // entered number
@@ -63,14 +66,16 @@
                       phnumref.once('value',function (snapshot) {
 
                           if (snapshot.val()=="true"){alert("User already approved");}
-                          else if (snapshot.val()=="false") {ApprovalCommence();} // display the user details and give an option for approval
+                          else if (snapshot.val()=="false") {
+                              document.getElementById('editb').style.display = "inline";
+                              ApprovalCommence();} // display the user details and give an option for approval
 
                       });
                   }else {alert("User not registered");}
               });
               off(phnumref);
               off(pnumexists);
-          }else {alert("Invalid passcode");}
+          }else {alert("Invalid passcode or phone number");}
       });
   }
 
@@ -100,27 +105,58 @@
   }
 
 function OnApproveButtonClick() {
-    var retVal = confirm("Do you want to continue ?");
-    if( retVal == true ){
-        firebase.database().ref(phonenumber).set({name : name, dob : dob, voted : "false", address : address, gender : gender, approved : "true"});
+    if(name){
+        var retVal = confirm("Do you want to continue ?");
+        if( retVal == true ){
+            firebase.database().ref(phonenumber).set({name : name, dob : dob, voted : "false", address : address, gender : gender, approved : "true"});
+            document.getElementById('myP').style.display = "inline";
+            setTimeout(function () {
+                window.location.reload(1);
+            }, 3400);
+            document.getElementById('para').innerHTML = "Approved";
 
-        setTimeout(function () {
-            window.location.reload(1);
-        }, 3400);
-        document.getElementById('para').innerHTML = "Approved";
+            off();
 
-        off();
+            return true;
+        }
+        else{
 
-        return true;
+            return false;
+        }
     }
-    else{
+    else {
+        alert("Null values not accepted");
+    }
 
-        return false;
+}
+
+function onEditButtonClick() {
+    document.getElementById('myP').style.display = "inline";
+    window.scrollTo(0,document.body.scrollHeight);
+    document.getElementById("newname").value = name;
+    document.getElementById("newdob").value = dob;
+    document.getElementById("newadd").value = address;
+
+}
+
+function savechanges() {
+    // To be started
+    name = document.getElementById("newname").value;
+    dob = document.getElementById("newdob").value;
+    address = document.getElementById("newadd").value;
+    if(name!=null && dob.length==10 && address!=null){
+        OnApproveButtonClick();
+    }
+    else {
+        alert("Incorrect data");
     }
 }
 </script>
 </head>
+
+
 <body>
+
 <center><h1><img src = "screen.png"></h1></center>
 <br/>
 <center><div>
@@ -151,7 +187,7 @@ function OnApproveButtonClick() {
         <td id="usergender"></td>
     </tr>
     <tr>
-        <th>Date of Number</th>
+        <th>Date of Birth</th>
         <td id = "userdob"></td>
     </tr>
     <tr>
@@ -168,9 +204,19 @@ function OnApproveButtonClick() {
 <center>
     <form>
         <input type="button" value="Approve" onclick="OnApproveButtonClick()">
+        <input type="button" id="editb" value="Edit" onclick="onEditButtonClick()" style="display: none">
     </form>
+
+
+</center><br/>
+<center>
+<form id="myP" name="EditForm" style="display: none" class="form-all">
+    <b>Enter the changes </b><br/><br/>
+    Name : <input type="text" placeholder="Enter the name" id="newname" required="required"><br/><br/>
+    Date of Birth : <input type="date" placeholder="DD/MM/YYYY" id="newdob" required="required"><br/><br/>
+    Address : <input type="text" placeholder="Enter valid address with pincode"required="required" id="newadd" maxlength="150" width="200" ><br/><br/>
+    <input type="button" value="Save and Approve" onclick="savechanges()">
+</form>
 </center>
-
-
 </body>
 </html>
